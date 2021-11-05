@@ -1,6 +1,6 @@
 [options]
     proxy_mode = True
-    admin_passwd = d7pg-fkp7-j5at
+    #admin_passwd = d7pg-fkp7-j5at
     #list_db = False
     #dbfilter = %d
     #xmlrpc_port = 8069
