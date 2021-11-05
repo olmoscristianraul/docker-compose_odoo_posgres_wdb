@@ -1,0 +1,62 @@
+version: '3.1'
+services:
+  odoo:
+    build: 
+      context: ./bin
+    restart: always
+    depends_on:
+      - odoodb
+      - wdb
+    ports:
+      - "80:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+    environment:
+      HOST: odoodb
+      USER: odoo
+      PASSWORD: myodoo
+      WDB_SOCKET_SERVER: wdb
+      WDB_NO_BROWSER_AUTO_OPEN: 1
+      WDB_WEB_SERVER: "localhost"
+      WDB_WEB_PORT: "13984"
+    command:
+      - odoo
+      - --limit-memory-soft=0
+      - --limit-time-real-cron=9999999
+      - --limit-time-real=9999999
+      - --workers=0
+      - --dev=reload,qweb,werkzeug,xml
+      - --log-level=debug
+
+  odoodb:
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=myodoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+
+  pgweb:
+    image: sosedoff/pgweb
+    restart: always
+    depends_on:
+      - odoodb
+    ports:
+      - "13081:8081"
+    environment:
+      DATABASE_URL: postgres://odoo:myodoo@odoodb:5432/postgres?sslmode=disable
+
+  wdb:
+    image: kozea/wdb
+    restart: always
+    ports:
+      - "13984:1984"
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
